@@ -67,7 +67,7 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 60 * 60);
+            await time.increase(60 * 60);
             const price = await contract.pricePerToken();
             await expect(contract.mint(1, {value: price})).to.be.revertedWith("Wallet is not in whitelist");
         });
@@ -76,7 +76,7 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 60 * 60);
+            await time.increase(60 * 60);
             await contract.setWhiteList([owner.address]);
             const price = await contract.pricePerToken();
             await contract.mint(1, {value: price});
@@ -87,7 +87,7 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 2 * 60 * 60);
+            await time.increase(2 * 60 * 60);
             await contract.setWhiteList([owner.address]);
             const price = await contract.pricePerToken();
             await expect(contract.mint(1, {value: price})).to.be.revertedWith("Wallet is not in allowlist");
@@ -97,7 +97,7 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 2 * 60 * 60);
+            await time.increase(2 * 60 * 60);
             await contract.setWhiteList([owner.address]);
             await contract.setAllowList([owner.address]);
             const price = await contract.pricePerToken();
@@ -109,7 +109,7 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 3 * 60 * 60);
+            await time.increase(3 * 60 * 60);
             const price = await contract.pricePerToken();
             await contract.mint(1, {value: price});
             expect(await contract.ownerOf(1)).to.be.equal(owner.address);
@@ -119,9 +119,9 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 3 * 60 * 60);
+            await time.increase(3 * 60 * 60);
             const price = await contract.pricePerToken();
-            await expect(contract.mint(1, {value: price.div(2)})).to.be.revertedWith("Ether value sent is not correct")
+            await expect(contract.mint(1, {value: price.div(2)})).to.be.revertedWith("Ether value sent is not correct");
         });
 
 
@@ -129,7 +129,7 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 3 * 60 * 60);
+            await time.increase(3 * 60 * 60);
             const price = await contract.pricePerToken();
 
             expect(await contract.availableToMint(owner.address)).to.equal(2);
@@ -143,10 +143,10 @@ describe("MoniNFT", function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
-            await time.increase( 3 * 60 * 60);
+            await time.increase(3 * 60 * 60);
             const price = await contract.pricePerToken();
             await contract.mint(2, {value: price.mul(2)});
-            await expect(contract.mint(1, {value: price})).to.revertedWith("Token count exceeded")
+            await expect(contract.mint(1, {value: price})).to.revertedWith("Token count exceeded");
         });
 
         it("Should not be in whitelist", async function () {
@@ -180,7 +180,14 @@ describe("MoniNFT", function () {
         });
 
         it("Should be able to add many wallets to wehitelist", async function () {
-            const {contract, owner,otherAccount, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
+            const {
+                contract,
+                owner,
+                otherAccount,
+                allowListStart,
+                whitelistStart,
+                publicStart
+            } = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
             await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
             await contract.setWhiteList([...Array(600)].map(_ => owner.address));
