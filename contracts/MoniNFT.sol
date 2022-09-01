@@ -108,6 +108,14 @@ contract MoniNFT is ERC721Enumerable, Ownable  {
         }
     }
 
+    function setPrice(uint256 _price) external onlyOwner {
+        pricePerToken = _price;
+    }
+
+    function setSupply(uint256 _supply) external onlyOwner {
+        supply = _supply;
+    }
+
     function isWalletWhitelisted(address _address) public view returns (bool) {
         return EnumerableSet.contains(whitelist, _address);
     }
