@@ -179,5 +179,13 @@ describe("MoniNFT", function () {
             expect(await contract.isWalletAllowlisted(owner.address)).to.be.equal(true);
         });
 
+        it("Should be able to add many wallets to wehitelist", async function () {
+            const {contract, owner,otherAccount, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
+            await contract.connect(owner).setSaleOpen();
+            await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
+            await contract.setWhiteList([...Array(600)].map(_ => owner.address));
+            expect(await contract.isWalletWhitelisted(owner.address)).to.be.equal(true);
+        });
+
     });
 });
