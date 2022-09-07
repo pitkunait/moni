@@ -82,6 +82,14 @@ describe("MoniNFT", function () {
             expect(await contract.ownerOf(1)).to.be.equal(owner.address);
         });
 
+        it("Should not be able to mint", async function () {
+            const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
+            await contract.connect(owner).setSaleOpen();
+            await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
+            const price = await contract.pricePerToken();
+            await expect(contract.mint(1, {value: price})).to.be.revertedWith('Sale not started yet');
+        });
+
         it("Should be reverted because wallet is not in allowlist", async function () {
             const {contract, owner, allowListStart, whitelistStart, publicStart} = await loadFixture(deploy);
             await contract.connect(owner).setSaleOpen();
@@ -212,7 +220,7 @@ describe("MoniNFT", function () {
             expect(info.supply).to.equal(1000);
             expect(info.maxMintCount).to.equal(2);
             expect(info.pricePerToken).to.equal(ethers.utils.parseEther("1"));
-            ethers.utils.parseEther("100000000")
+            ethers.utils.parseEther("100000000");
         });
 
         it("Should return correct wallet stage", async function () {

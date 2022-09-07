@@ -169,27 +169,23 @@ contract MoniNFT is ERC721Enumerable, Ownable {
     function mint(uint256 _tokenCount) payable external {
         require(saleOpen, "Sale is closed");
 
-        uint256 totalSupply = totalSupply();
-        require(totalSupply + _tokenCount <= supply, "Purchase would exceed max tokens");
-        require(pricePerToken * _tokenCount <= msg.value, "Ether value sent is not correct");
-
-        require(_tokenCount > 0 && _tokenCount <= maxMintCount, "Invalid token count supplied");
-
-        uint256 _availableToMint = availableToMint(msg.sender);
-        require(_availableToMint >= _tokenCount, "Token count exceeded");
-
         Status _stage = stage();
         if (_stage == Status.WhiteListMint) {
             require(isWalletWhitelisted(msg.sender), "Wallet is not in whitelist");
         } else if (_stage == Status.AllowListMint) {
             require(isWalletAllowlisted(msg.sender), "Wallet is not in allowlist");
+        } else if (_stage == Status.NotStarted) {
+            revert("Sale not started yet");
         }
 
-        mintRecords[msg.sender] += _tokenCount;
+        require(totalSupply() + _tokenCount <= supply, "Purchase would exceed max tokens");
+        require(pricePerToken * _tokenCount <= msg.value, "Ether value sent is not correct");
+        require(_tokenCount > 0 && _tokenCount <= maxMintCount, "Invalid token count supplied");
+        require( availableToMint(msg.sender) >= _tokenCount, "Token count exceeded");
 
+        mintRecords[msg.sender] += _tokenCount;
         for (uint256 i = 1; i <= _tokenCount; i++) {
-            uint256 _tokenId = totalSupply + i;
-            _safeMint(msg.sender, _tokenId);
+            _safeMint(msg.sender, totalSupply() + i);
         }
     }
 }
