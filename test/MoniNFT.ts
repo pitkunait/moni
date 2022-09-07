@@ -1,5 +1,4 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -198,7 +197,6 @@ describe("MoniNFT", function () {
             const {
                 contract,
                 owner,
-                otherAccount,
                 allowListStart,
                 whitelistStart,
                 publicStart
@@ -208,12 +206,12 @@ describe("MoniNFT", function () {
             await contract.setWhiteList([...Array(2)].map(_ => owner.address));
 
             const info = await contract.info();
-            expect(info.stage).to.equal(5)
-            expect(info.saleOpen).to.equal(true)
-            expect(info.minted).to.equal(0)
-            expect(info.supply).to.equal(1000)
-            expect(info.maxMintCount).to.equal(2)
-            expect(info.pricePerToken).to.equal(ethers.utils.parseEther("1"))
+            expect(info.stage).to.equal(5);
+            expect(info.saleOpen).to.equal(true);
+            expect(info.minted).to.equal(0);
+            expect(info.supply).to.equal(1000);
+            expect(info.maxMintCount).to.equal(2);
+            expect(info.pricePerToken).to.equal(ethers.utils.parseEther("1"));
         });
 
     });
