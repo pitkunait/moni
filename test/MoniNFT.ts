@@ -194,5 +194,27 @@ describe("MoniNFT", function () {
             expect(await contract.isWalletWhitelisted(owner.address)).to.be.equal(true);
         });
 
+        it("Should return info", async function () {
+            const {
+                contract,
+                owner,
+                otherAccount,
+                allowListStart,
+                whitelistStart,
+                publicStart
+            } = await loadFixture(deploy);
+            await contract.connect(owner).setSaleOpen();
+            await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
+            await contract.setWhiteList([...Array(2)].map(_ => owner.address));
+
+            const info = await contract.info();
+            expect(info.stage).to.equal(5)
+            expect(info.saleOpen).to.equal(true)
+            expect(info.minted).to.equal(0)
+            expect(info.supply).to.equal(1000)
+            expect(info.maxMintCount).to.equal(2)
+            expect(info.pricePerToken).to.equal(ethers.utils.parseEther("1"))
+        });
+
     });
 });

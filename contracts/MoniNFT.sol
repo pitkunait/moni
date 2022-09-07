@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 
-contract MoniNFT is ERC721Enumerable, Ownable  {
+contract MoniNFT is ERC721Enumerable, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using Strings for uint256;
 
@@ -20,9 +20,9 @@ contract MoniNFT is ERC721Enumerable, Ownable  {
     EnumerableSet.AddressSet private allowlist;
     bool public saleOpen = false;
     string public baseURI;
-    uint256 whiteListStart;
-    uint256 allowListStart;
-    uint256 publicStart;
+    uint256 public whiteListStart;
+    uint256 public allowListStart;
+    uint256 public publicStart;
 
     enum Status {
         Closed,
@@ -33,10 +33,26 @@ contract MoniNFT is ERC721Enumerable, Ownable  {
         NotStarted
     }
 
+    struct Info {
+        Status stage;
+        uint256 whiteListStart;
+        uint256 allowListStart;
+        uint256 publicStart;
+        bool saleOpen;
+        uint256 supply;
+        uint256 minted;
+        uint256 maxMintCount;
+        uint256 pricePerToken;
+    }
+
     constructor(
         string memory name,
         string memory symbol
     ) ERC721(name, symbol) {
+    }
+
+    function info() public view returns (Info memory) {
+        return Info(stage(), whiteListStart, allowListStart, publicStart, saleOpen, supply, totalSupply(), maxMintCount, pricePerToken);
     }
 
     function stage() public view returns (Status) {
