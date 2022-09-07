@@ -33,6 +33,12 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         NotStarted
     }
 
+    enum WalletStage {
+        whiteList,
+        allowList,
+        publicMint
+    }
+
     struct Info {
         Status stage;
         uint256 whiteListStart;
@@ -140,6 +146,16 @@ contract MoniNFT is ERC721Enumerable, Ownable {
 
     function setSupply(uint256 _supply) external onlyOwner {
         supply = _supply;
+    }
+
+    function getWalletStage(address _wallet) external view returns (WalletStage) {
+        if (isWalletWhitelisted(_wallet)) {
+            return WalletStage.whiteList;
+        } else if (isWalletAllowlisted(_wallet)) {
+            return WalletStage.allowList;
+        } else {
+            return WalletStage.publicMint;
+        }
     }
 
     function isWalletWhitelisted(address _address) public view returns (bool) {

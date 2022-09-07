@@ -212,6 +212,30 @@ describe("MoniNFT", function () {
             expect(info.supply).to.equal(1000);
             expect(info.maxMintCount).to.equal(2);
             expect(info.pricePerToken).to.equal(ethers.utils.parseEther("1"));
+            ethers.utils.parseEther("100000000")
+        });
+
+        it("Should return correct wallet stage", async function () {
+            const {
+                contract,
+                owner,
+                otherAccount,
+                allowListStart,
+                whitelistStart,
+                publicStart
+            } = await loadFixture(deploy);
+            await contract.connect(owner).setSaleOpen();
+            await contract.setSaleStart(whitelistStart, allowListStart, publicStart);
+            let walletStage = await contract.getWalletStage(owner.address);
+            expect(walletStage).to.equal(2);
+            await contract.setWhiteList([owner.address]);
+            walletStage = await contract.getWalletStage(owner.address);
+            expect(walletStage).to.equal(0);
+            walletStage = await contract.getWalletStage(otherAccount.address);
+            expect(walletStage).to.equal(2);
+            await contract.setAllowList([otherAccount.address]);
+            walletStage = await contract.getWalletStage(otherAccount.address);
+            expect(walletStage).to.equal(1);
         });
 
     });
