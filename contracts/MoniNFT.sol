@@ -52,7 +52,17 @@ contract MoniNFT is ERC721Enumerable, Ownable {
     }
 
     function info() public view returns (Info memory) {
-        return Info(stage(), whiteListStart, allowListStart, publicStart, saleOpen, supply, totalSupply(), maxMintCount, pricePerToken);
+        return Info(
+            stage(),
+            whiteListStart,
+            allowListStart,
+            publicStart,
+            saleOpen,
+            supply,
+            totalSupply(),
+            maxMintCount,
+            pricePerToken
+        );
     }
 
     function stage() public view returns (Status) {
