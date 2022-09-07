@@ -3,7 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-gas-reporter";
 import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 const config: HardhatUserConfig = {
     // defaultNetwork: "rinkeby",
@@ -25,7 +25,11 @@ const config: HardhatUserConfig = {
         rinkeby: {
             url: process.env.RINKEBY_API_KEY,
             accounts: [process.env.RINKEBY_PRIVATE_KEY!]
-        }
+        },
+        'optimism-goerli': {
+            url: "https://goerli.optimism.io",
+            accounts: [process.env.OPTIMISMGROELI_PRIVATE_KEY!]
+        },
     },
     gasReporter: {
         currency: 'USD',
