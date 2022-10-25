@@ -12,12 +12,18 @@ contract MoniNFT is ERC721Enumerable, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using Strings for uint256;
 
-    uint256 public supply = 1000;
-    uint256 public pricePerToken = 1 ether;
+    uint256 public waveSupply;
+    uint256 public MAX_SUPPLY;
+    uint256 public waveMinted;
+    uint256 public pricePerToken;
+    uint256 public maxMintCount;
+
     mapping(address => uint256) public mintRecords;
-    uint256 public maxMintCount = 2;
+    address[] private minters;
+
     EnumerableSet.AddressSet private whitelist;
     EnumerableSet.AddressSet private allowlist;
+
     bool public saleOpen = false;
     string public baseURI;
     uint256 public whiteListStart;
@@ -30,7 +36,8 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         WhiteListMint,
         AllowListMint,
         PublicMint,
-        NotStarted
+        NotStarted,
+        SoldOutStage
     }
 
     enum WalletStage {
@@ -45,16 +52,29 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         uint256 allowListStart;
         uint256 publicStart;
         bool saleOpen;
-        uint256 supply;
-        uint256 minted;
+
+        uint256 waveSupply;
+        uint256 maxSupply;
+
+        uint256 waveMinted;
+        uint256 totalMinted;
+
         uint256 maxMintCount;
         uint256 pricePerToken;
     }
 
     constructor(
         string memory name,
-        string memory symbol
+        string memory symbol,
+        uint256 _supply,
+        uint256 _maxSupply,
+        uint256 _pricePerToken,
+        uint256 _maxMintCount
     ) ERC721(name, symbol) {
+        pricePerToken = _pricePerToken;
+        maxMintCount = _maxMintCount;
+        waveSupply = _supply;
+        MAX_SUPPLY = _maxSupply;
     }
 
     function info() public view returns (Info memory) {
@@ -64,8 +84,13 @@ contract MoniNFT is ERC721Enumerable, Ownable {
             allowListStart,
             publicStart,
             saleOpen,
-            supply,
+
+            waveSupply,
+            MAX_SUPPLY,
+
+            waveMinted,
             totalSupply(),
+
             maxMintCount,
             pricePerToken
         );
@@ -76,7 +101,11 @@ contract MoniNFT is ERC721Enumerable, Ownable {
             return Status.Closed;
         }
 
-        if (totalSupply() >= supply) {
+        if (waveMinted >= waveSupply) {
+            return Status.SoldOutStage;
+        }
+
+        if (totalSupply() >= MAX_SUPPLY) {
             return Status.SoldOut;
         }
 
@@ -92,6 +121,29 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         return Status.NotStarted;
     }
 
+    function startWave(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart, uint256 _amount) public onlyOwner {
+
+        for (uint256 i = 0; i < whitelist.length(); i++) {
+            address whitelisted = whitelist.at(i);
+            whitelist.remove(whitelisted);
+        }
+
+        for (uint256 i = 0; i < allowlist.length(); i++) {
+            address whitelisted = allowlist.at(i);
+            allowlist.remove(whitelisted);
+        }
+
+        waveMinted = 0;
+        setSaleStart(_whiteListStart, _allowListStart, _publicStart);
+        waveSupply = _amount;
+    }
+
+    function clearMinters() public onlyOwner {
+        for (uint256 i = 0; i < minters.length; i++) {
+            delete mintRecords[minters[i]];
+        }
+    }
+
     function withdraw() public onlyOwner {
         uint balance = address(this).balance;
         payable(msg.sender).transfer(balance);
@@ -105,7 +157,7 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         saleOpen = false;
     }
 
-    function setSaleStart(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart) onlyOwner external {
+    function setSaleStart(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart) internal {
         require(_whiteListStart > block.timestamp, "Whitelist should be in the future");
         require(_allowListStart > _whiteListStart, "Allowlist start should be after whitelist start");
         require(_publicStart > _allowListStart, "Public start should be after allowlist start");
@@ -121,7 +173,7 @@ contract MoniNFT is ERC721Enumerable, Ownable {
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : '';
+        return baseURI;
     }
 
     function availableToMint(address _address) public view returns (uint256) {
@@ -144,8 +196,8 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         pricePerToken = _price;
     }
 
-    function setSupply(uint256 _supply) external onlyOwner {
-        supply = _supply;
+    function setMaxSupply(uint256 _supply) external onlyOwner {
+        MAX_SUPPLY = _supply;
     }
 
     function getWalletStage(address _wallet) external view returns (WalletStage) {
@@ -177,15 +229,18 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         } else if (_stage == Status.NotStarted) {
             revert("Sale not started yet");
         }
-
-        require(totalSupply() + _tokenCount <= supply, "Purchase would exceed max tokens");
+        require(totalSupply() + _tokenCount <= MAX_SUPPLY, "Purchase would exceed max tokens");
+        require(waveMinted + _tokenCount <= waveSupply, "Purchase would exceed wave max tokens");
         require(pricePerToken * _tokenCount <= msg.value, "Ether value sent is not correct");
         require(_tokenCount > 0 && _tokenCount <= maxMintCount, "Invalid token count supplied");
-        require( availableToMint(msg.sender) >= _tokenCount, "Token count exceeded");
+        require(availableToMint(msg.sender) >= _tokenCount, "Available token mint count exceeded");
 
         mintRecords[msg.sender] += _tokenCount;
-        for (uint256 i = 1; i <= _tokenCount; i++) {
-            _safeMint(msg.sender, totalSupply() + i);
+        minters.push(msg.sender);
+        for (uint256 i = 0; i < _tokenCount; i++) {
+            waveMinted += 1;
+            _safeMint(msg.sender, totalSupply() + 1);
+
         }
     }
 }

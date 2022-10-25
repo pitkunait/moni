@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-    // defaultNetwork: "rinkeby",
+    defaultNetwork: "goerli",
     solidity: {
         version: "0.8.9",
         settings: {
@@ -18,13 +18,9 @@ const config: HardhatUserConfig = {
     },
     networks: {
         hardhat: {},
-        groeli: {
+        goerli: {
             url: process.env.GROELI_API_KEY,
             accounts: [process.env.GROELI_PRIVATE_KEY!]
-        },
-        rinkeby: {
-            url: process.env.RINKEBY_API_KEY,
-            accounts: [process.env.RINKEBY_PRIVATE_KEY!]
         },
         'optimism-goerli': {
             url: "https://goerli.optimism.io",

@@ -3,8 +3,9 @@ import { readdirSync, readFileSync, writeFileSync } from "fs";
 
 async function main() {
     const MoniNFT = await ethers.getContractFactory("MoniNFT");
-    const moniNFT = await MoniNFT.deploy("MoniNFT", "MONI");
+    const moniNFT = await MoniNFT.deploy("MoniNFT", "MONI",50, 200, ethers.utils.parseEther("0.1"), 1);
     await moniNFT.deployed();
+
     const path = 'artifacts/build-info';
     const output = 'jsoninput/stdinput.json';
     const files = readdirSync(path);
