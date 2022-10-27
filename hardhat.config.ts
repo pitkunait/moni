@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-    defaultNetwork: "mumbai",
+    // defaultNetwork: "mumbai",
     solidity: {
         version: "0.8.9",
         settings: {

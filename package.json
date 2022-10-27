@@ -1,7 +1,8 @@
 {
   "scripts": {
     "test": "npx hardhat test",
-    "deploy": "npx hardhat run scripts/deploy.ts"
+    "deploy": "npx hardhat run scripts/deploy.ts",
+    "deploy:mumbai": "npx hardhat run scripts/deploy.ts --network mumbai"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.7.3",
