@@ -249,5 +249,28 @@ describe("MoniWizards", function () {
             ethers.utils.parseEther("100000000");
         });
 
+        it("test tree regeneration", async function () {
+            const {
+                contract,
+                owner,
+                acc1,
+                acc2,
+                acc3,
+                allowListStart,
+                whitelistStart,
+                publicStart
+            } = await loadFixture(deploy);
+            await contract.connect(owner).setSaleOpen();
+            await contract.startWave(whitelistStart, allowListStart, publicStart, 50);
+            let whitelistTree = generateTree([acc1.address, acc2.address, acc3.address]);
+            await contract.connect(owner).setMerkleRootWhitelist(whitelistTree.getRoot());
+            await time.increase(60 * 60);
+            const price = await contract.pricePerToken();
+            whitelistTree = generateTree([acc1.address, acc2.address, acc3.address]);
+            let proof = getProof(whitelistTree, acc1.address);
+            await contract.connect(acc1).mint(proof, {value: price});
+            expect(await contract.ownerOf(1)).to.be.equal(acc1.address);
+        });
+
     });
 });
