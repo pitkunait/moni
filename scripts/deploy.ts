@@ -2,7 +2,7 @@ import { ethers, run } from "hardhat";
 
 async function main() {
     const MoniNFT = await ethers.getContractFactory("MoniWizards");
-    const moniNFT = await MoniNFT.deploy("Moni Wizards", "MWIZ", 50, 200, ethers.utils.parseEther("0.1"), 1);
+    const moniNFT = await MoniNFT.deploy("Moni Wizards", "MWIZ", 50, 200, ethers.utils.parseEther("0.1"));
     await moniNFT.deployed();
     await moniNFT.deployTransaction.wait(5);
 
@@ -17,7 +17,6 @@ async function main() {
             50,
             200,
             ethers.utils.parseEther("0.1"),
-            1
         ],
     });
     console.log("VERIFICATION COMPLETE");
