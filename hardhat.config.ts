@@ -33,8 +33,9 @@ const config: HardhatUserConfig = {
         },
     },
     gasReporter: {
-        // currency: 'USD',
-        // gasPrice: 30,
+        currency: 'USD',
+        gasPrice: 30,
+        coinmarketcap: '7c509189-8d56-4d3b-9381-4a24b2609ed2',
         enabled: true
     },
     etherscan: {

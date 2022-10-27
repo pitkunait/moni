@@ -1,34 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 
 contract MoniWizards is ERC721Enumerable, Ownable {
-    using EnumerableSet for EnumerableSet.AddressSet;
     using Strings for uint256;
+
+    mapping(address => bool) public mintRecords;
 
     uint256 public waveSupply;
     uint256 public MAX_SUPPLY;
     uint256 public waveMinted;
     uint256 public pricePerToken;
-    uint256 public maxMintCount;
 
-    mapping(address => uint256) public mintRecords;
-    address[] private minters;
-
-    EnumerableSet.AddressSet private whitelist;
-    EnumerableSet.AddressSet private allowlist;
-
-    bool public saleOpen = false;
-    string public baseURI;
     uint256 public whiteListStart;
     uint256 public allowListStart;
     uint256 public publicStart;
+
+    string public baseURI;
+
+    bytes32 private merkleRootWhitelist;
+    bytes32 private merkleRootAllowlist;
+
+    bool public saleOpen = false;
 
     enum Status {
         Closed,
@@ -52,14 +50,10 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         uint256 allowListStart;
         uint256 publicStart;
         bool saleOpen;
-
         uint256 waveSupply;
         uint256 maxSupply;
-
         uint256 waveMinted;
         uint256 totalMinted;
-
-        uint256 maxMintCount;
         uint256 pricePerToken;
     }
 
@@ -68,11 +62,9 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         string memory symbol,
         uint256 _supply,
         uint256 _maxSupply,
-        uint256 _pricePerToken,
-        uint256 _maxMintCount
+        uint256 _pricePerToken
     ) ERC721(name, symbol) {
         pricePerToken = _pricePerToken;
-        maxMintCount = _maxMintCount;
         waveSupply = _supply;
         MAX_SUPPLY = _maxSupply;
     }
@@ -84,14 +76,10 @@ contract MoniWizards is ERC721Enumerable, Ownable {
             allowListStart,
             publicStart,
             saleOpen,
-
             waveSupply,
             MAX_SUPPLY,
-
             waveMinted,
             totalSupply(),
-
-            maxMintCount,
             pricePerToken
         );
     }
@@ -101,12 +89,12 @@ contract MoniWizards is ERC721Enumerable, Ownable {
             return Status.Closed;
         }
 
-        if (waveMinted >= waveSupply) {
-            return Status.SoldOutStage;
-        }
-
         if (totalSupply() >= MAX_SUPPLY) {
             return Status.SoldOut;
+        }
+
+        if (waveMinted >= waveSupply) {
+            return Status.SoldOutStage;
         }
 
         uint256 ts = block.timestamp;
@@ -121,27 +109,18 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         return Status.NotStarted;
     }
 
-    function startWave(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart, uint256 _amount) public onlyOwner {
-
-        for (uint256 i = 0; i < whitelist.length(); i++) {
-            address whitelisted = whitelist.at(i);
-            whitelist.remove(whitelisted);
-        }
-
-        for (uint256 i = 0; i < allowlist.length(); i++) {
-            address whitelisted = allowlist.at(i);
-            allowlist.remove(whitelisted);
-        }
-
-        waveMinted = 0;
-        setSaleStart(_whiteListStart, _allowListStart, _publicStart);
-        waveSupply = _amount;
+    function setMerkleRootWhitelist(bytes32 _merkleRoot) external onlyOwner {
+        merkleRootWhitelist = _merkleRoot;
     }
 
-    function clearMinters() public onlyOwner {
-        for (uint256 i = 0; i < minters.length; i++) {
-            delete mintRecords[minters[i]];
-        }
+    function setMerkleRootAllowlist(bytes32 _merkleRoot) external onlyOwner {
+        merkleRootAllowlist = _merkleRoot;
+    }
+
+    function startWave(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart, uint256 _amount) public onlyOwner {
+        waveMinted = 0;
+        waveSupply = _amount;
+        setSaleStart(_whiteListStart, _allowListStart, _publicStart);
     }
 
     function withdraw() public onlyOwner {
@@ -172,22 +151,6 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : '';
     }
 
-    function availableToMint(address _address) public view returns (uint256) {
-        return maxMintCount - mintRecords[_address];
-    }
-
-    function setWhiteList(address[] calldata addresses) external onlyOwner {
-        for (uint256 i = 0; i < addresses.length; i++) {
-            EnumerableSet.add(whitelist, addresses[i]);
-        }
-    }
-
-    function setAllowList(address[] calldata addresses) external onlyOwner {
-        for (uint256 i = 0; i < addresses.length; i++) {
-            EnumerableSet.add(allowlist, addresses[i]);
-        }
-    }
-
     function setPrice(uint256 _price) external onlyOwner {
         pricePerToken = _price;
     }
@@ -196,47 +159,50 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         MAX_SUPPLY = _supply;
     }
 
-    function getWalletStage(address _wallet) external view returns (WalletStage) {
-        if (isWalletWhitelisted(_wallet)) {
-            return WalletStage.whiteList;
-        } else if (isWalletAllowlisted(_wallet)) {
-            return WalletStage.allowList;
-        } else {
-            return WalletStage.publicMint;
-        }
-    }
-
-    function isWalletWhitelisted(address _address) public view returns (bool) {
-        return EnumerableSet.contains(whitelist, _address);
-    }
-
-    function isWalletAllowlisted(address _address) public view returns (bool) {
-        return EnumerableSet.contains(allowlist, _address);
-    }
-
-    function mint(uint256 _tokenCount) payable external {
+    function mint(bytes32[] calldata _merkleProof) payable external {
         require(saleOpen, "Sale is closed");
 
-        Status _stage = stage();
-        if (_stage == Status.WhiteListMint) {
-            require(isWalletWhitelisted(msg.sender), "Wallet is not in whitelist");
-        } else if (_stage == Status.AllowListMint) {
-            require(isWalletAllowlisted(msg.sender) || isWalletWhitelisted(msg.sender), "Wallet is not in allowlist");
-        } else if (_stage == Status.NotStarted) {
+        uint256 _totalSupply = totalSupply();
+
+        require(_totalSupply + 1 <= MAX_SUPPLY, "Purchase would exceed max tokens");
+        require(waveMinted + 1 <= waveSupply, "Purchase would exceed wave max tokens");
+        require(msg.value >= pricePerToken, "Ether value sent is not correct");
+        require(!mintRecords[msg.sender], "Already minted");
+
+        uint256 _publicStart = publicStart;
+        uint256 _allowListStart = allowListStart;
+        uint256 _whiteListStart = whiteListStart;
+
+        require(_publicStart > 0, "Public start should be set");
+        require(_allowListStart > 0, "Public start should be set");
+        require(_whiteListStart > 0, "Public start should be set");
+
+        uint256 ts = block.timestamp;
+
+        if (ts >= _publicStart) {
+            _mintInternal();
+        } else if (ts >= _allowListStart) {
+            require(MerkleProof.verify(
+                    _merkleProof,
+                    merkleRootAllowlist,
+                    keccak256(abi.encodePacked(msg.sender)
+                    )), "Wallet is not in allowlist");
+            _mintInternal();
+        } else if (ts >= _whiteListStart) {
+            require(MerkleProof.verify(
+                    _merkleProof,
+                    merkleRootWhitelist,
+                    keccak256(abi.encodePacked(msg.sender)
+                    )), "Wallet is not in whitelist");
+            _mintInternal();
+        } else {
             revert("Sale not started yet");
         }
-        require(totalSupply() + _tokenCount <= MAX_SUPPLY, "Purchase would exceed max tokens");
-        require(waveMinted + _tokenCount <= waveSupply, "Purchase would exceed wave max tokens");
-        require(pricePerToken * _tokenCount <= msg.value, "Ether value sent is not correct");
-        require(_tokenCount > 0 && _tokenCount <= maxMintCount, "Invalid token count supplied");
-        require(availableToMint(msg.sender) >= _tokenCount, "Available token mint count exceeded");
+    }
 
-        mintRecords[msg.sender] += _tokenCount;
-        minters.push(msg.sender);
-        for (uint256 i = 0; i < _tokenCount; i++) {
-            waveMinted += 1;
-            _safeMint(msg.sender, totalSupply() + 1);
-
-        }
+    function _mintInternal() private {
+        mintRecords[msg.sender] = true;
+        waveMinted += 1;
+        _safeMint(msg.sender, totalSupply() + 1);
     }
 }
