@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 
-contract MoniNFT is ERC721Enumerable, Ownable {
+contract MoniWizards is ERC721Enumerable, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using Strings for uint256;
 
@@ -158,10 +158,6 @@ contract MoniNFT is ERC721Enumerable, Ownable {
     }
 
     function setSaleStart(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart) internal {
-        require(_whiteListStart > block.timestamp, "Whitelist should be in the future");
-        require(_allowListStart > _whiteListStart, "Allowlist start should be after whitelist start");
-        require(_publicStart > _allowListStart, "Public start should be after allowlist start");
-
         whiteListStart = _whiteListStart;
         allowListStart = _allowListStart;
         publicStart = _publicStart;
@@ -173,7 +169,7 @@ contract MoniNFT is ERC721Enumerable, Ownable {
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-        return baseURI;
+        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : '';
     }
 
     function availableToMint(address _address) public view returns (uint256) {
@@ -225,7 +221,7 @@ contract MoniNFT is ERC721Enumerable, Ownable {
         if (_stage == Status.WhiteListMint) {
             require(isWalletWhitelisted(msg.sender), "Wallet is not in whitelist");
         } else if (_stage == Status.AllowListMint) {
-            require(isWalletAllowlisted(msg.sender), "Wallet is not in allowlist");
+            require(isWalletAllowlisted(msg.sender) || isWalletWhitelisted(msg.sender), "Wallet is not in allowlist");
         } else if (_stage == Status.NotStarted) {
             revert("Sale not started yet");
         }

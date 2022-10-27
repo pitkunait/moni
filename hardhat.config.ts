@@ -1,12 +1,13 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-gas-reporter";
+import "@nomiclabs/hardhat-etherscan";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const config: HardhatUserConfig = {
-    defaultNetwork: "goerli",
+    // defaultNetwork: "mumbai",
     solidity: {
         version: "0.8.9",
         settings: {
@@ -18,6 +19,10 @@ const config: HardhatUserConfig = {
     },
     networks: {
         hardhat: {},
+        mumbai: {
+            url: process.env.MUMBAI_API_KEY,
+            accounts: [process.env.GROELI_PRIVATE_KEY!]
+        },
         goerli: {
             url: process.env.GROELI_API_KEY,
             accounts: [process.env.GROELI_PRIVATE_KEY!]
@@ -28,9 +33,12 @@ const config: HardhatUserConfig = {
         },
     },
     gasReporter: {
-        currency: 'USD',
-        gasPrice: 30,
+        // currency: 'USD',
+        // gasPrice: 30,
         enabled: true
+    },
+    etherscan: {
+        apiKey: process.env.ETHERSCAN_API_KEY!
     }
 };
 

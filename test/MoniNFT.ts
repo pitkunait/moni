@@ -2,12 +2,12 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("MoniNFT", function () {
+describe("MoniWizards", function () {
 
     async function deploy() {
         const [owner, otherAccount, otherAccount2] = await ethers.getSigners();
-        const MoniNFT = await ethers.getContractFactory("MoniNFT");
-        const contract = await MoniNFT.deploy("MoniNFT", "MONI", 50, 200, ethers.utils.parseEther("1"), 1);
+        const MoniNFT = await ethers.getContractFactory("MoniWizards");
+        const contract = await MoniNFT.deploy("Moni Wizards", "MWIZ", 50, 200, ethers.utils.parseEther("1"), 1);
         const whitelistStart = await time.latest() + 60 * 60;
         const allowListStart = await time.latest() + 2 * 60 * 60;
         const publicStart = await time.latest() + 3 * 60 * 60;
@@ -144,7 +144,7 @@ describe("MoniNFT", function () {
             await time.increase(2 * 60 * 60);
             await contract.setWhiteList([owner.address]);
             const price = await contract.pricePerToken();
-            await expect(contract.mint(1, {value: price})).to.be.revertedWith("Wallet is not in allowlist");
+            expect(await contract.mint(1, {value: price}));
         });
 
         it("Should be able to mint in allowlist", async function () {
