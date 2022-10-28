@@ -21,11 +21,11 @@ const config: HardhatUserConfig = {
         hardhat: {},
         mumbai: {
             url: process.env.MUMBAI_API_KEY,
-            accounts: [process.env.GROELI_PRIVATE_KEY!]
+            accounts: [process.env.GOERLI_PRIVATE_KEY!]
         },
         goerli: {
-            url: process.env.GROELI_API_KEY,
-            accounts: [process.env.GROELI_PRIVATE_KEY!]
+            url: process.env.GOERLI_API_KEY,
+            accounts: [process.env.GOERLI_PRIVATE_KEY!]
         },
         'optimism-goerli': {
             url: "https://goerli.optimism.io",
