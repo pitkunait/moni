@@ -25,6 +25,7 @@ contract MoniWizards is ERC721Enumerable, Ownable {
 
     bytes32 private merkleRootWhitelist;
     bytes32 private merkleRootAllowlist;
+    mapping(address => bool) private claimList;
 
     bool public saleOpen = false;
 
@@ -117,6 +118,20 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         merkleRootAllowlist = _merkleRoot;
     }
 
+    function addToClaimlist(address[] calldata _claimlist) external onlyOwner {
+        for (uint i = 0; i < _claimlist.length; i++) {
+            claimList[_claimlist[i]] = true;
+        }
+    }
+
+    function removeFromClaimlist(address[] calldata _claimlist) external onlyOwner {
+        for (uint i = 0; i < _claimlist.length; i++) {
+            if (claimList[_claimlist[i]]) {
+                delete claimList[_claimlist[i]];
+            }
+        }
+    }
+
     function startWave(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart, uint256 _amount) public onlyOwner {
         waveMinted = 0;
         waveSupply = _amount;
@@ -198,6 +213,15 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         } else {
             revert("Sale not started yet");
         }
+    }
+
+    function claim() external {
+        uint256 _totalSupply = totalSupply();
+        require(_totalSupply + 1 <= MAX_SUPPLY, "Purchase would exceed max tokens");
+        require(!mintRecords[msg.sender], "Already minted");
+        require(claimList[msg.sender], "Wallet is not in claim list");
+        mintRecords[msg.sender] = true;
+        _safeMint(msg.sender, totalSupply() + 1);
     }
 
     function _mintInternal() private {

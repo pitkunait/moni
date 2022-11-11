@@ -3,7 +3,8 @@
     "test": "npx hardhat test",
     "deploy": "npx hardhat run scripts/deploy.ts",
     "deploy:mumbai": "npx hardhat run scripts/deploy.ts --network mumbai",
-    "deploy:goerli": "npx hardhat run scripts/deploy.ts --network goerli"
+    "deploy:goerli": "npx hardhat run scripts/deploy.ts --network goerli",
+    "test:merkletree": "npx hardhat run scripts/merkleTree.ts"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.7.3",

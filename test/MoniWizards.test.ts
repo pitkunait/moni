@@ -272,5 +272,24 @@ describe("MoniWizards", function () {
             expect(await contract.ownerOf(1)).to.be.equal(acc1.address);
         });
 
+        it("Should be able to mint in claimlist", async function () {
+            const {
+                contract,
+                owner,
+                acc1,
+                acc2,
+                allowListStart,
+                whitelistStart,
+                publicStart
+            } = await loadFixture(deploy);
+            await contract.connect(owner).setSaleOpen();
+            await contract.startWave(whitelistStart, allowListStart, publicStart, 50);
+            await contract.connect(owner).addToClaimlist([acc1.address]);
+            await contract.connect(acc1).claim();
+            expect(await contract.ownerOf(1)).to.be.equal(acc1.address);
+            await expect(contract.connect(acc2).claim()).to.be.revertedWith("Wallet is not in claim list");
+        });
+
+
     });
 });

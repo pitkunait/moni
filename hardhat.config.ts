@@ -21,7 +21,7 @@ const config: HardhatUserConfig = {
         hardhat: {},
         mumbai: {
             url: process.env.MUMBAI_API_KEY,
-            accounts: [process.env.GOERLI_PRIVATE_KEY!]
+            accounts: [process.env.ACC2_PK!]
         },
         goerli: {
             url: process.env.GOERLI_API_KEY,
@@ -39,7 +39,7 @@ const config: HardhatUserConfig = {
         enabled: true
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY!
+        apiKey: process.env.POLYGON_API_KEY!
     }
 };
 
