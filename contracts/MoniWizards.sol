@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {DefaultOperatorFilterer} from "./DefaultOperatorFilterer.sol";
 
 
-contract MoniWizards is ERC721Enumerable, Ownable {
+contract MoniWizards is DefaultOperatorFilterer, ERC721Enumerable, Ownable {
     using Strings for uint256;
 
     mapping(address => bool) public mintRecords;
@@ -70,7 +71,12 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         MAX_SUPPLY = _maxSupply;
     }
 
-    function info() public view returns (Info memory) {
+    function info()
+    public
+    view
+    returns
+    (Info memory)
+    {
         return Info(
             stage(),
             whiteListStart,
@@ -85,7 +91,11 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         );
     }
 
-    function stage() public view returns (Status) {
+    function stage()
+    public
+    view
+    returns (Status)
+    {
         if (!saleOpen) {
             return Status.Closed;
         }
@@ -110,21 +120,33 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         return Status.NotStarted;
     }
 
-    function setMerkleRootWhitelist(bytes32 _merkleRoot) external onlyOwner {
+    function setMerkleRootWhitelist(bytes32 _merkleRoot)
+    external
+    onlyOwner
+    {
         merkleRootWhitelist = _merkleRoot;
     }
 
-    function setMerkleRootAllowlist(bytes32 _merkleRoot) external onlyOwner {
+    function setMerkleRootAllowlist(bytes32 _merkleRoot)
+    external
+    onlyOwner
+    {
         merkleRootAllowlist = _merkleRoot;
     }
 
-    function addToClaimlist(address[] calldata _claimlist) external onlyOwner {
+    function addToClaimlist(address[] calldata _claimlist)
+    external
+    onlyOwner
+    {
         for (uint i = 0; i < _claimlist.length; i++) {
             claimList[_claimlist[i]] = true;
         }
     }
 
-    function removeFromClaimlist(address[] calldata _claimlist) external onlyOwner {
+    function removeFromClaimlist(address[] calldata _claimlist)
+    external
+    onlyOwner
+    {
         for (uint i = 0; i < _claimlist.length; i++) {
             if (claimList[_claimlist[i]]) {
                 delete claimList[_claimlist[i]];
@@ -132,49 +154,80 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         }
     }
 
-    function startWave(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart, uint256 _amount) public onlyOwner {
+    function startWave(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart, uint256 _amount)
+    public
+    onlyOwner
+    {
         waveMinted = 0;
         waveSupply = _amount;
         setSaleStart(_whiteListStart, _allowListStart, _publicStart);
     }
 
-    function withdraw() public onlyOwner {
+    function withdraw()
+    public
+    onlyOwner
+    {
         uint balance = address(this).balance;
         payable(msg.sender).transfer(balance);
     }
 
-    function setSaleOpen() onlyOwner external {
+    function setSaleOpen()
+    onlyOwner
+    external
+    {
         saleOpen = true;
     }
 
-    function setSaleClose() onlyOwner external {
+    function setSaleClose()
+    onlyOwner
+    external
+    {
         saleOpen = false;
     }
 
-    function setSaleStart(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart) internal {
+    function setSaleStart(uint256 _whiteListStart, uint256 _allowListStart, uint256 _publicStart)
+    internal
+    {
         whiteListStart = _whiteListStart;
         allowListStart = _allowListStart;
         publicStart = _publicStart;
     }
 
-    function setBaseURI(string memory _uri) external onlyOwner {
+    function setBaseURI(string memory _uri)
+    external
+    onlyOwner
+    {
         baseURI = _uri;
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId)
+    public
+    view
+    override
+    returns (string memory)
+    {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : '';
     }
 
-    function setPrice(uint256 _price) external onlyOwner {
+    function setPrice(uint256 _price)
+    external
+    onlyOwner
+    {
         pricePerToken = _price;
     }
 
-    function setMaxSupply(uint256 _supply) external onlyOwner {
+    function setMaxSupply(uint256 _supply)
+    external
+    onlyOwner
+    {
         MAX_SUPPLY = _supply;
     }
 
-    function mint(bytes32[] calldata _merkleProof) payable external {
+    function mint(bytes32[] calldata _merkleProof)
+    payable
+    external
+    {
         require(saleOpen, "Sale is closed");
 
         uint256 _totalSupply = totalSupply();
@@ -215,7 +268,9 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         }
     }
 
-    function claim() external {
+    function claim()
+    external
+    {
         uint256 _totalSupply = totalSupply();
         require(_totalSupply + 1 <= MAX_SUPPLY, "Purchase would exceed max tokens");
         require(!mintRecords[msg.sender], "Already minted");
@@ -224,13 +279,58 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         _safeMint(msg.sender, totalSupply() + 1);
     }
 
-    function _mintInternal() private {
+    function _mintInternal()
+    private
+    {
         mintRecords[msg.sender] = true;
         waveMinted += 1;
         _safeMint(msg.sender, totalSupply() + 1);
     }
 
-    function revoke(address _from, address _to, uint256 _id) external onlyOwner {
+    function revoke(address _from, address _to, uint256 _id)
+    external
+    onlyOwner
+    {
         _transfer(_from, _to, _id);
+    }
+
+    function setApprovalForAll(address operator, bool approved)
+    public
+    override(ERC721, IERC721)
+    onlyAllowedOperatorApproval(operator)
+    {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    function approve(address operator, uint256 tokenId)
+    public
+    override(ERC721, IERC721)
+    onlyAllowedOperatorApproval(operator)
+    {
+        super.approve(operator, tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId)
+    public
+    override(ERC721, IERC721)
+    onlyAllowedOperator(from)
+    {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId)
+    public
+    override(ERC721, IERC721)
+    onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
+    public
+    override(ERC721, IERC721)
+    onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId, data);
     }
 }

@@ -7,9 +7,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-    // defaultNetwork: "mumbai",
     solidity: {
-        version: "0.8.9",
+        version: "0.8.13",
         settings: {
             optimizer: {
                 enabled: true,
@@ -19,17 +18,21 @@ const config: HardhatUserConfig = {
     },
     networks: {
         hardhat: {},
+        etherium: {
+            url: process.env.ETH_MAINNET_API_KEY,
+            accounts: [process.env.ACC2_PK!]
+        },
         mumbai: {
             url: process.env.MUMBAI_API_KEY,
             accounts: [process.env.ACC2_PK!]
         },
         goerli: {
             url: process.env.GOERLI_API_KEY,
-            accounts: [process.env.GOERLI_PRIVATE_KEY!]
+            accounts: [process.env.ACC2_PK!]
         },
         'optimism-goerli': {
             url: "https://goerli.optimism.io",
-            accounts: [process.env.OPTIMISMGROELI_PRIVATE_KEY!]
+            accounts: [process.env.ACC2_PK!]
         },
     },
     gasReporter: {
@@ -39,7 +42,7 @@ const config: HardhatUserConfig = {
         enabled: true
     },
     etherscan: {
-        apiKey: process.env.POLYGON_API_KEY!
+        apiKey: process.env.ETHERSCAN_API_KEY!
     }
 };
 

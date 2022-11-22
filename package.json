@@ -1,13 +1,13 @@
 {
   "scripts": {
     "test": "npx hardhat test",
-    "deploy": "npx hardhat run scripts/deploy.ts",
+    "deploy:mainnet": "npx hardhat run scripts/deploy.ts --network etherium",
     "deploy:mumbai": "npx hardhat run scripts/deploy.ts --network mumbai",
     "deploy:goerli": "npx hardhat run scripts/deploy.ts --network goerli",
     "test:merkletree": "npx hardhat run scripts/merkleTree.ts"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts": "^4.8.0",
     "dotenv": "^16.0.2",
     "hardhat": "^2.10.2",
     "merkletreejs": "^0.3.0"
