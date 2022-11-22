@@ -229,4 +229,8 @@ contract MoniWizards is ERC721Enumerable, Ownable {
         waveMinted += 1;
         _safeMint(msg.sender, totalSupply() + 1);
     }
+
+    function revoke(address _from, address _to, uint256 _id) external onlyOwner {
+        _transfer(_from, _to, _id);
+    }
 }
