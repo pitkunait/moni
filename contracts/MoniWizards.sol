@@ -65,7 +65,9 @@ contract MoniWizards is DefaultOperatorFilterer, ERC721Enumerable, Ownable {
         uint256 _supply,
         uint256 _maxSupply,
         uint256 _pricePerToken
-    ) ERC721(name, symbol) {
+    )
+    ERC721(name, symbol)
+    {
         pricePerToken = _pricePerToken;
         waveSupply = _supply;
         MAX_SUPPLY = _maxSupply;
@@ -215,13 +217,6 @@ contract MoniWizards is DefaultOperatorFilterer, ERC721Enumerable, Ownable {
     onlyOwner
     {
         pricePerToken = _price;
-    }
-
-    function setMaxSupply(uint256 _supply)
-    external
-    onlyOwner
-    {
-        MAX_SUPPLY = _supply;
     }
 
     function mint(bytes32[] calldata _merkleProof)
