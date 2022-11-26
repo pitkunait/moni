@@ -12,3 +12,5 @@ artifacts
 .idea
 
 **/.DS_Store
+
+/meta.car

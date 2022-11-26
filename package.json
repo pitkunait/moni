@@ -4,7 +4,8 @@
     "deploy:mainnet": "npx hardhat run scripts/deploy.ts --network etherium",
     "deploy:mumbai": "npx hardhat run scripts/deploy.ts --network mumbai",
     "deploy:goerli": "npx hardhat run scripts/deploy.ts --network goerli",
-    "test:merkletree": "npx hardhat run scripts/merkleTree.ts"
+    "test:merkletree": "npx hardhat run scripts/merkleTree.ts",
+    "car-metadata": "bash scripts/car_metadata.sh"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.0",
