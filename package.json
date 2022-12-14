@@ -5,12 +5,13 @@
     "deploy:mumbai": "npx hardhat run scripts/deploy.ts --network mumbai",
     "deploy:goerli": "npx hardhat run scripts/deploy.ts --network goerli",
     "test:merkletree": "npx hardhat run scripts/merkleTree.ts",
-    "car-metadata": "bash scripts/car_metadata.sh"
+    "car-metadata": "ipfs-car --pack metadata --wrapWithDirectory false --output meta.car"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.0",
     "dotenv": "^16.0.2",
     "hardhat": "^2.10.2",
+    "ipfs-car": "^0.9.1",
     "merkletreejs": "^0.3.0"
   },
   "devDependencies": {
